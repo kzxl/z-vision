@@ -41,3 +41,12 @@ foreach ($ide in $ideRoots) {
 
     Write-Host "[$($ide.Name)] Installed z-vision -> $targetDir" -ForegroundColor Green
 }
+
+$agyCfgPath = Join-Path $env:USERPROFILE ".gemini\config\config.json"
+if (Test-Path $agyCfgPath) {
+    $cfg = Get-Content $agyCfgPath -Raw | ConvertFrom-Json
+    if (-not $cfg.plugins) { $cfg | Add-Member -MemberType NoteProperty -Name "plugins" -Value ([PSCustomObject]@{}) }
+    $cfg.plugins | Add-Member -MemberType NoteProperty -Name "z-vision" -Value ([PSCustomObject]@{ enabled = (-not $Uninstall) }) -Force
+    $cfg | ConvertTo-Json -Depth 10 | Set-Content $agyCfgPath -Encoding utf8
+    Write-Host "[Antigravity] Set plugins.z-vision.enabled = $(-not $Uninstall) in $agyCfgPath" -ForegroundColor Green
+}
