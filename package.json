@@ -1,8 +1,8 @@
 {
   "name": "@kzxl/z-vision",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "Token-diet Windows desktop vision (UIA tree, 64-bit dHash, WinRT OCR) and safe precision agent arm (SendInput, UIA Invoke/SetValue, batch plan, Esc emergency stop) for AI agents.",
+  "description": "Token-diet Windows desktop vision (UIA tree, 64-bit dHash, WinRT OCR) and safe precision agent arm (SendInput, Virtual Mouse, Multi-Pointer Parallel + Arrow HUD, Esc stop) for AI agents.",
   "license": "MIT",
   "author": "kzxl",
   "repository": {

@@ -1,8 +1,8 @@
 {
   "id": "z-vision",
   "name": "Z-Vision Desktop Perception & Precision Agent Arm",
-  "version": "1.0.0",
-  "description": "Token-diet Windows desktop vision (UIA tree, 64-bit dHash diffing, native WinRT OCR) and safe precision desktop arm (SendInput, UIA Invoke/SetValue, batch plan, Esc emergency stop).",
+  "version": "1.1.0",
+  "description": "Token-diet Windows desktop vision (UIA tree, 64-bit dHash diffing, native WinRT OCR) and safe precision desktop arm (SendInput, Virtual Mouse, Multi-Pointer Parallel, Esc stop).",
   "author": "kzxl",
   "license": "MIT",
   "kind": "domain-module",
@@ -17,13 +17,13 @@
     "provides": [
       {
         "id": "capability:desktop-vision",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "description": "UIA accessibility snapshots, DPI-aware window capture, dHash visual diffing, and WinRT OCR."
       },
       {
         "id": "capability:desktop-arm",
-        "version": "1.0.0",
-        "description": "Guarded mouse/keyboard/clipboard actuation, batch plans, and global Esc emergency stop."
+        "version": "1.1.0",
+        "description": "Guarded physical/virtual mouse, keyboard/clipboard actuation, multi-pointer parallel lanes with arrow overlay, and Esc stop."
       }
     ],
     "requires": []
@@ -40,6 +40,7 @@
         "zvision_observe",
         "zvision_act",
         "zvision_plan",
+        "zvision_parallel",
         "zvision_ocr",
         "zvision_stop"
       ]

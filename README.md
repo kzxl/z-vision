@@ -1,108 +1,32 @@
-# z-vision — Token-Diet Windows Desktop Vision & Safe Agent Arm
+# z-vision
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Runtime](https://img.shields.io/badge/Runtime-Node.js%2022+-339933?logo=node.js)](https://nodejs.org)
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6?logo=windows)](https://learn.microsoft.com/en-us/windows/win32/winauto/entry-uiauto-win32)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-0%20npm%20%7C%20No%20.NET%20SDK-brightgreen.svg)](#zero-sdk-native-architecture)
+Sovereign Windows desktop perception and guarded precision agent arm for `z-plugin`. Zero npm dependencies and zero .NET SDK required — the native Windows host (`ZVisionHost.exe`) compiles on-the-fly from C# 5 sources via stock `.NET Framework 4.x` `csc.exe` and caches per SHA-256 content hash under `~/.z-plugin/z-vision/bin/`.
 
-> **Give AI coding agents crisp Windows desktop eyes and a guarded precision arm without burning vision tokens.**  
-> `z-vision` pairs a token-diet **Node.js 22+ MCP server** with an on-the-fly **C# 5 native Windows host** compiled by stock `.NET Framework 4.x` `csc.exe` — zero npm packages, zero .NET SDK required, and built-in **Esc / Ctrl+Alt+F12** emergency stop.
+## Capabilities
 
----
+- **Token-Diet Observation & Launch (`zvision_windows`, `zvision_observe`)**:
+  - Built-in `launch_exe` / `launch_args` on `zvision_windows` returns both `bounds` (`DWMWA_EXTENDED_FRAME_BOUNDS`) and `client_bounds` (`GetClientRect`).
+  - Compact UI Automation (UIA) tree (`index`, `role`, `name`, `aid`, `rect`, supported patterns) hardened against transient COM disposal.
+  - 64-bit Difference Hash (`dhash`) ported from `ZeroGraphics.Vision`: when `with_image: "auto"` suppresses redundant unchanged frames, `image_size` resets to unscaled `bounds` dimensions so coordinate mapping stays exact.
+  - Per-Monitor DPI-aware window capture (`PrintWindow` with DWM-aligned `BitBlt` fallback) and explicit `coord_space` (`image` | `window` | `client` | `screen`).
+- **Native Windows OCR (`zvision_ocr`)**:
+  - Uses stock `Windows.Media.Ocr` (WinRT) when available on Windows 10/11, returning lines, words, and absolute screen coordinates; degrades gracefully when unavailable.
+- **Precision Physical, Virtual & Multi-Pointer Arm (`zvision_act`, `zvision_plan`, `zvision_parallel`)**:
+  - Physical pixel-center `SendInput` (`mode: "physical"`) with `restore_cursor` support, full UTF-16/Vietnamese `KEYEVENTF_UNICODE` typing, STA clipboard-preserving `paste`, hotkey chords (`key`), and semantic UIA `Invoke` / `SetValue` (`mode: "uia"` or `physical: false`).
+  - **Virtual Mouse (`mode: "virtual"`)**: Resolves leaf child windows (`ChildWindowFromPointEx` + `ScreenToClient`) and posts `WM_MOUSEMOVE` / `WM_LBUTTON*` / `WM_MOUSEWHEEL` / `WM_CHAR` directly to `HWND` without hijacking the hardware cursor or stealing focus.
+  - **Multi-Pointer & Multi-Arrow HUD (`zvision_parallel`, `ArrowOverlay.cs`)**: Executes up to 8 concurrent lanes (`virtual` per-lane `PostMessage` or Win8+ `touch` multi-contact `InjectTouchInput`) with numbered click-through topmost arrows (`#1`..`#N`).
+  - Sequential batch `zvision_plan` (up to 50 steps) with `wait_settle` (`dhash` stability) and `wait_text`, stopping immediately on first failure.
+- **Safety & Emergency Stop (`zvision_stop`)**:
+  - One-use `observation_id` with window-drift validation (`<= 4px`) and Stop-generation invalidation.
+  - Process tiers: UAC/credential helpers `blocked`; terminals/IDEs `click-only` by default; EN/VI sensitive labels & dangerous hotkeys require `confirm_sensitive: true`.
+  - Dedicated `WH_KEYBOARD_LL` hook: physical `Esc` or `Ctrl+Alt+F12` immediately halts input and releases held keys/buttons via `InputLedger`.
 
-## Key Capabilities
-
-### Desktop Vision ("Eyes")
-- **Compact UI Automation Tree (`zvision_observe`)**: Walks `UIAutomationClient` controls with bounded depth and returns 1-line-per-control summaries (`[0] Button "Save" aid=btnSave (420,310 80x28) [Invoke]`) — ~10–15 tokens/control.
-- **64-Bit Perceptual dHash Gating (`with_image: "auto"`)**: Computes a 9x8 BT.709 grayscale difference hash on every frame. When the Hamming distance vs. the prior frame is `<= 2` and UIA nodes are present, redundant screenshots are suppressed automatically to save vision tokens.
-- **Per-Monitor DPI-Aware Capture**: Captures target windows via `PrintWindow(PW_RENDERFULLCONTENT)` with `BitBlt` fallback and scales screenshot coordinates back to physical screen coordinates.
-- **Native Windows WinRT OCR (`zvision_ocr`)**: Uses `Windows.Media.Ocr` directly from Windows 10/11 WinMetadata returning lines, words, and absolute screen bounding boxes (gracefully degrades if WinMetadata is absent).
-- **Template Matching**: Coarse-to-fine Normalized Cross Correlation (NCC) over grayscale buffers for owner-drawn icons or custom surfaces.
-
-### Precision Agent Arm ("Hands")
-- **Physical + Semantic Actuation (`zvision_act`)**:
-  - `SendInput` mouse (`click`, `double_click`, `right_click`, `move`, multi-point `drag` strokes, vertical/horizontal `scroll`) across multi-monitor virtual desktops (`MOUSEEVENTF_VIRTUALDESK`).
-  - Full UTF-16 / Vietnamese diacritic typing via `KEYEVENTF_UNICODE`, STA clipboard-preserving `paste`, hotkey chords (`key`), and semantic UIA `Invoke` / `Value.SetValue` / `Toggle` / `Select` (`physical: false`).
-- **Batch Plans (`zvision_plan`)**: Pre-validates and executes up to **50 sequential steps** in a single turn (`click`, `type`, `paste`, `key`, `wait_settle` via dHash stability, `wait_text`, `sleep`), stopping immediately on the first error or emergency stop.
-
-### Safety & Control Fences
-- **One-Use `observation_id` + Window Drift Guard**: Every `zvision_act` / `zvision_plan` consumes its `observation_id` once and aborts (`stale_observation`) if the window moved/resized beyond `4px` or if Stop occurred.
-- **Process Tier Isolation**:
-  - `blocked`: UAC / credential dialogs (`consent.exe`, `CredentialUIBroker.exe`, `LogonUI.exe`, `LockApp.exe`) block all input.
-  - `click-only`: Terminals and IDEs (`WindowsTerminal`, `pwsh`, `cmd`, `Code`, `devenv`, `rider64`, `regedit`, etc.) reject typing/keystrokes unless `allow_restricted: true` is explicitly passed.
-- **Sensitive Action Confirmation**: Blocks English/Vietnamese destructive labels (`delete`, `pay`, `submit`, `password`, `xóa`, `thanh toán`, `chuyển khoản`, `đăng nhập`, ...) and dangerous hotkeys (`Alt+F4`, `Win+R`, `Ctrl+Alt+Del`) unless `confirm_sensitive: true` + `reason` are supplied.
-- **Hardware Emergency Stop (`zvision_stop`)**: Dedicated low-level hook (`WH_KEYBOARD_LL`) intercepts physical **`Esc`** or **`Ctrl+Alt+F12`**, latches `emergency_stopped`, and releases all held keys/mouse buttons tracked in `InputLedger`.
-
----
-
-## MCP Tools (7 Focused Tools)
-
-| Tool | Purpose |
-| :--- | :--- |
-| `zvision_status` | Inspect monitors/DPI, WinRT OCR availability/languages, and emergency-stop state |
-| `zvision_windows` | List visible desktop windows (`hwnd`, `pid`, `process`, `title`, `bounds`) with optional filter |
-| `zvision_observe` | Read compact UIA tree, 64-bit `dhash`, optional WinRT OCR, and dHash-gated screenshot; issues one-use `observation_id` |
-| `zvision_act` | Execute one guarded action targeting UIA `index`, unique `automation_id`/`name`, `ocr_text`, or `[x, y]` |
-| `zvision_plan` | Pre-validate and run 1..50 sequential steps (with `wait_settle` / `wait_text`) in one turn |
-| `zvision_ocr` | Run WinRT OCR on a window or screen ROI `[x, y, w, h]` returning screen coordinates |
-| `zvision_stop` | Latch emergency stop, reset stop state, or release all held inputs |
-
----
-
-## Zero-SDK Native Architecture
-
-1. On first run on Windows, `scripts/lib/native-builder.mjs` locates stock `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe`, GAC `UIAutomation*` / `WindowsBase` assemblies, and `C:\Windows\System32\WinMetadata\Windows.*.winmd`.
-2. It compiles `scripts/native/*.cs` into `~/.z-plugin/z-vision/bin/ZVisionHost-<sha256>.exe` (override with `ZVISION_DATA_DIR`).
-3. If `WinMetadata` is unavailable on a machine, it automatically falls back to compiling core UIA + Capture + dHash + SendInput without WinRT OCR.
-4. `scripts/lib/host-client.mjs` spawns `ZVisionHost.exe` lazily over UTF-8 newline-delimited JSON stdio and shuts it down after idle timeout.
-
----
-
-## Installation
-
-### Google Antigravity & ZCode
-```powershell
-git clone https://github.com/kzxl/z-vision.git
-cd z-vision
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
-
-### Cursor / Claude Code / Any MCP Client
-Add to your `.cursor/mcp.json` or `.claude_mcp.json`:
-```json
-{
-  "mcpServers": {
-    "z-vision": {
-      "command": "node",
-      "args": ["C:/path/to/z-vision/scripts/mcp-server.mjs"]
-    }
-  }
-}
-```
-
-### Standalone CLI
-```bash
-npm run build
-node scripts/cli.mjs status
-node scripts/cli.mjs windows
-node scripts/cli.mjs observe 0 --image
-node scripts/cli.mjs ocr 0
-node scripts/cli.mjs stop
-```
-
----
-
-## Testing
+## CLI Quick Usage
 
 ```bash
-npm run check
-npm test
+node plugins/z-vision/scripts/cli.mjs build
+node plugins/z-vision/scripts/cli.mjs status
+node plugins/z-vision/scripts/cli.mjs windows
+node plugins/z-vision/scripts/cli.mjs observe 0 --image
+node plugins/z-vision/scripts/cli.mjs stop
 ```
-
-Runs safety-policy unit tests, mock-transport vision-engine tests, MCP JSON-RPC stdio smoke tests, and on Windows compiles `ZVisionHost.exe` via `csc.exe` and executes read-only `status`, `windows`, `observe`, `ocr`, and `stop`/`reset` checks.
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE). Part of the [z-plugin](https://github.com/kzxl/z-plugin) ecosystem.
