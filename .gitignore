@@ -1,0 +1,6 @@
+node_modules/
+.localdata/
+*.exe
+*.pdb
+*.log
+dist/

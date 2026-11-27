@@ -1,0 +1,55 @@
+{
+  "name": "@kzxl/z-vision",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Token-diet Windows desktop vision (UIA tree, 64-bit dHash, WinRT OCR) and safe precision agent arm (SendInput, UIA Invoke/SetValue, batch plan, Esc emergency stop) for AI agents.",
+  "license": "MIT",
+  "author": "kzxl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kzxl/z-vision.git"
+  },
+  "homepage": "https://github.com/kzxl/z-vision#readme",
+  "bugs": {
+    "url": "https://github.com/kzxl/z-vision/issues"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "computer-use",
+    "desktop-automation",
+    "uiautomation",
+    "ocr",
+    "dhash",
+    "ai-agent",
+    "antigravity",
+    "claude-code",
+    "cursor",
+    "windows"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "z-vision": "scripts/cli.mjs",
+    "z-vision-mcp": "scripts/mcp-server.mjs"
+  },
+  "files": [
+    "scripts",
+    "rules",
+    "skills",
+    "mcp_config.json",
+    "plugin.json",
+    ".zcode-plugin",
+    "z-plugin.manifest.json",
+    "install.ps1",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check scripts/mcp-server.mjs && node --check scripts/cli.mjs && node --check scripts/lib/native-builder.mjs && node --check scripts/lib/safety-policy.mjs && node --check scripts/lib/host-client.mjs && node --check scripts/lib/vision-engine.mjs && node --check tests/vision.test.mjs",
+    "test": "node tests/vision.test.mjs",
+    "build": "node scripts/cli.mjs build",
+    "start": "node scripts/mcp-server.mjs"
+  }
+}
